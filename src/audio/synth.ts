@@ -1,3 +1,5 @@
+import { type FilterEnv, filter_env, hpf, lpf } from "./filters";
+
 export type SoundFn = (
 	ctx: AudioContext,
 	freq: number,
@@ -52,7 +54,12 @@ function oscillators(
 	return sounds[sound](ctx, freq, out);
 }
 
-export type SynthOpts = { sound: Sound };
+export type SynthOpts = {
+	sound: Sound;
+	lpf?: number;
+	hpf?: number;
+	filterEnv?: FilterEnv;
+};
 
 export type Patch = {
 	play: (
@@ -68,10 +75,30 @@ export function Synthesiser(opts: SynthOpts): Patch {
 	return {
 		play(ctx, out, freq, time, duration) {
 			const mix = new GainNode(ctx);
-			mix.connect(out);
 
+			// Add FX
+			const highPassFilter =
+				opts.hpf !== undefined ? hpf(ctx, opts.hpf) : undefined;
+
+			const lowPassFilter = lpf(ctx, opts.lpf ?? 1);
+
+			if (opts.filterEnv !== undefined) {
+				filter_env(
+					lowPassFilter,
+					opts.lpf ?? 1,
+					opts.filterEnv,
+					time,
+					duration,
+				);
+			}
+
+			let chain: AudioNode = mix;
+			for (const i of [highPassFilter, lowPassFilter, out]) {
+				if (i) chain = chain.connect(i);
+			}
+
+			// Start Playing Oscillators
 			const oscs = oscillators(ctx, opts.sound, freq, mix);
-
 			for (const osc of oscs) {
 				osc.start(time);
 				osc.stop(time + duration);
