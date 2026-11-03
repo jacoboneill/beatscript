@@ -4,6 +4,8 @@ import {
 	ampEnvelope,
 	type FilterEnvelope,
 	filterEnvelope,
+	type PitchEnvelope,
+	pitchEnvelope,
 } from "./modulators";
 
 export type SoundFn = (
@@ -62,8 +64,9 @@ function oscillators(
 
 export type SynthOpts = {
 	sound: Sound;
-	lpf?: number;
+	pitchEnvelope?: PitchEnvelope;
 	hpf?: number;
+	lpf?: number;
 	filterEnvelope?: FilterEnvelope;
 	ampEnvelope?: ADSR;
 	postGain?: number;
@@ -145,13 +148,16 @@ export function Synthesiser(opts: SynthOpts): Patch {
 			// Start Playing Oscillators
 			const oscs = oscillators(ctx, opts.sound, freq, input);
 			for (const osc of oscs) {
+				if (opts.pitchEnvelope !== undefined) {
+					pitchEnvelope(osc, opts.pitchEnvelope, time, duration);
+				}
 				osc.start(time);
 				osc.stop(end);
 			}
 
 			oscs[0].onended = () => {
 				for (const node of signalPath.slice(0, -1)) {
-					node?.disconnect();
+					if (node !== undefined) node.disconnect();
 				}
 				for (const osc of oscs) {
 					osc.disconnect();

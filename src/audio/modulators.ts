@@ -48,3 +48,31 @@ export function ampEnvelope(
 ): number {
 	return envelope(amp.gain, env, 0, 1, time, duration);
 }
+
+export type PitchEnvelope = { adsr: ADSR; semitones: number };
+export function pitchEnvelope(
+	osc: OscillatorNode,
+	env: PitchEnvelope,
+	time: number,
+	duration: number,
+): number {
+	const { adsr, semitones } = env;
+	if (semitones < -48 || semitones > 48) {
+		throw new RangeError(`pitchEnvelope semitone range ±48 (${env.semitones})`);
+	}
+
+	const freq = osc.frequency.value;
+
+	const shift = (freq: number, semitones: number): number => {
+		return freq * 2 ** (semitones / 12);
+	};
+
+	return envelope(
+		osc.frequency,
+		adsr,
+		freq,
+		shift(freq, semitones),
+		time,
+		duration,
+	);
+}
