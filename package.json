@@ -6,7 +6,8 @@
 	"scripts": {
 		"dev": "vite",
 		"build": "tsc -b && vite build",
-		"check": "tsc -b && biome check"
+		"check": "tsc -b && biome check",
+		"clean": "rm -rf ./dist"
 	},
 	"dependencies": {
 		"preact": "^11.1.1"
