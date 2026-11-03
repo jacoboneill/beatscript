@@ -39,3 +39,12 @@ export function filterEnvelope(
 	const peak = amount * (1 - n) * RANGE_CENTS;
 	return envelope(filter.detune, adsr, 0, peak, time, duration);
 }
+
+export function ampEnvelope(
+	amp: GainNode,
+	env: ADSR,
+	time: number,
+	duration: number,
+): number {
+	return envelope(amp.gain, env, 0, 1, time, duration);
+}

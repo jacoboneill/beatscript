@@ -1,5 +1,10 @@
 import { hpf, lpf } from "./filters";
-import { type FilterEnvelope, filterEnvelope } from "./modulators";
+import {
+	type ADSR,
+	ampEnvelope,
+	type FilterEnvelope,
+	filterEnvelope,
+} from "./modulators";
 
 export type SoundFn = (
 	ctx: AudioContext,
@@ -60,6 +65,7 @@ export type SynthOpts = {
 	lpf?: number;
 	hpf?: number;
 	filterEnvelope?: FilterEnvelope;
+	ampEnvelope?: ADSR;
 };
 
 export type Patch = {
@@ -75,35 +81,69 @@ export type Patch = {
 export function Synthesiser(opts: SynthOpts): Patch {
 	return {
 		play(ctx, out, freq, time, duration) {
-			const mix = new GainNode(ctx);
+			const input = new GainNode(ctx);
 
-			// Add FX
+			/*
+			 * Add FX
+			 *
+			 *      input -> hpf -------> lpf ----------> amp (VCA) -> post gain -> out
+			 *        ↑                    ↑                 ↑
+			 *   pitch envelope      filter envelope    amp envelope
+			 */
+
 			const highPassFilter =
 				opts.hpf !== undefined ? hpf(ctx, opts.hpf) : undefined;
 
-			const lowPassFilter = lpf(ctx, opts.lpf ?? 1);
-
-			if (opts.filterEnvelope !== undefined) {
-				filterEnvelope(
-					lowPassFilter,
-					opts.lpf ?? 1,
-					opts.filterEnvelope,
-					time,
-					duration,
-				);
+			let lowPassFilter: BiquadFilterNode | undefined;
+			if (opts.lpf !== undefined) {
+				lowPassFilter = lpf(ctx, opts.lpf);
+				if (opts.filterEnvelope !== undefined) {
+					filterEnvelope(
+						lowPassFilter,
+						opts.lpf,
+						opts.filterEnvelope,
+						time,
+						duration,
+					);
+				}
 			}
 
-			let chain: AudioNode = mix;
-			for (const i of [highPassFilter, lowPassFilter, out]) {
-				if (i) chain = chain.connect(i);
+			// Amp Envelope is the only non-optional effect in the chain, to stop clicking
+			const amp = new GainNode(ctx);
+			const end = ampEnvelope(
+				amp,
+				opts.ampEnvelope ?? [0.01, 0, 1, 0.05],
+				time,
+				duration,
+			);
+
+			const signalPath: (AudioNode | undefined)[] = [
+				input,
+				highPassFilter,
+				lowPassFilter,
+				amp,
+				out,
+			];
+			let signalChain: AudioNode = input;
+			for (const node of signalPath.slice(1)) {
+				if (node) signalChain = signalChain.connect(node);
 			}
 
 			// Start Playing Oscillators
-			const oscs = oscillators(ctx, opts.sound, freq, mix);
+			const oscs = oscillators(ctx, opts.sound, freq, input);
 			for (const osc of oscs) {
 				osc.start(time);
-				osc.stop(time + duration);
+				osc.stop(end);
 			}
+
+			oscs[0].onended = () => {
+				for (const node of signalPath.slice(0, -1)) {
+					node?.disconnect();
+				}
+				for (const osc of oscs) {
+					osc.disconnect();
+				}
+			};
 		},
 	};
 }
