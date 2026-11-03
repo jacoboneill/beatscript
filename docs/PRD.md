@@ -43,7 +43,14 @@ const arp = Sequencer({
 const bass = Sequencer({
   notes: "[b1,e1]!8 [a1,e1]!8 [a1,d1]!8 [a1,d1]!8",
   step: "1/8",
-}).add(Synthesiser({ ...synthConfig, lpf: 0.2 }));
+}).add(
+  Synthesiser({
+    ...synthConfig,
+    lpf: 0.2,
+    filterEnvelope: { adsr: [0.01, 0.2, 0.1, 0.03], amount: 0.4 },
+    ampEnvelope: [0.01, 0.2, 0.6, 0.03],
+  }),
+);
 
 const kick = Sequencer({
   notes: "c1",
