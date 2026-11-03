@@ -32,6 +32,7 @@ const synthConfig = {
   sound: "supersaw",
   filterEnvelope: [0.01, 8.5, 0.1, 0.03],
   ampEnvelope: [0.01, 8.5, 0.1, 0.03],
+  postGain: 0.8,
 };
 
 const arp = Sequencer({
@@ -52,7 +53,6 @@ const kick = Sequencer({
     sound: "sine",
     pitchEnvelope: { adsr: [0, 0.08, 0, 0], semitones: 36 },
     ampEnvelope: [0, 0.3, 0, 0.05],
-    postGain: 1.2,
   }),
 );
 
@@ -117,7 +117,7 @@ Patches take an options object and create a voice that a controller can then pla
 | `filterEnvelope` | number[4]\|{adsr: number[4], amount: number} | Envelope on the lpf cutoff. Either an ADSR array, or `{adsr, amount}` where `amount` (0-1) is how far above the base cutoff the envelope peaks. Default amount `1` (peaks fully open). Needs `lpf` |
 | `ampEnvelope`    | number[4]                                    | Envelope on the voice volume. Default `[0.01, 0, 1, 0.05]`: a short fade in and out so notes don't click                                                                                           |
 | `pitchEnvelope`  | {adsr: number[4], semitones: number (±48)}   | Envelope on oscillator pitch. Peaks `semitones` above the note and settles to it                                                                                                                   |
-| `postGain`       | number (0-4)                                 | Linear gain after the amp envelope                                                                                                                                                                 |
+| `postGain`       | number (0-1)                                 | Volume after the amp envelope. `1` leaves it unchanged, so it can only turn a sound down                                                                                                           |
 
 ## 4. Tech Choices
 
