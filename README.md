@@ -6,8 +6,8 @@ A small live-coding music tool for the browser, inspired by [Strudel](https://st
 const kick = Sequencer({ notes: "c1", step: "1/4" }).add(
   Synthesiser({
     sound: "sine",
-    pitch_env: { adsr: [0, 0.08, 0, 0], semitones: 36 },
-    amp_env: [0, 0.3, 0, 0.05],
+    pitchEnv: { adsr: [0, 0.08, 0, 0], semitones: 36 },
+    ampEnv: [0, 0.3, 0, 0.05],
   }),
 );
 
