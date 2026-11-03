@@ -1,4 +1,5 @@
-import { type FilterEnv, filter_env, hpf, lpf } from "./filters";
+import { hpf, lpf } from "./filters";
+import { type FilterEnvelope, filterEnvelope } from "./modulators";
 
 export type SoundFn = (
 	ctx: AudioContext,
@@ -58,7 +59,7 @@ export type SynthOpts = {
 	sound: Sound;
 	lpf?: number;
 	hpf?: number;
-	filterEnv?: FilterEnv;
+	filterEnvelope?: FilterEnvelope;
 };
 
 export type Patch = {
@@ -82,11 +83,11 @@ export function Synthesiser(opts: SynthOpts): Patch {
 
 			const lowPassFilter = lpf(ctx, opts.lpf ?? 1);
 
-			if (opts.filterEnv !== undefined) {
-				filter_env(
+			if (opts.filterEnvelope !== undefined) {
+				filterEnvelope(
 					lowPassFilter,
 					opts.lpf ?? 1,
-					opts.filterEnv,
+					opts.filterEnvelope,
 					time,
 					duration,
 				);
