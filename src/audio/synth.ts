@@ -1,4 +1,12 @@
-import { type FilterEnv, filter_env, hpf, lpf } from "./filters";
+import { hpf, lpf } from "./filters";
+import {
+	type ADSR,
+	ampEnvelope,
+	type FilterEnvelope,
+	filterEnvelope,
+	type PitchEnvelope,
+	pitchEnvelope,
+} from "./modulators";
 
 export type SoundFn = (
 	ctx: AudioContext,
@@ -56,9 +64,12 @@ function oscillators(
 
 export type SynthOpts = {
 	sound: Sound;
-	lpf?: number;
+	pitchEnvelope?: PitchEnvelope;
 	hpf?: number;
-	filterEnv?: FilterEnv;
+	lpf?: number;
+	filterEnvelope?: FilterEnvelope;
+	ampEnvelope?: ADSR;
+	postGain?: number;
 };
 
 export type Patch = {
@@ -71,38 +82,114 @@ export type Patch = {
 	) => void;
 };
 
+function checkRange(
+	name: string,
+	value: number | undefined,
+	min: number,
+	max: number,
+) {
+	if (value !== undefined && (value < min || value > max)) {
+		throw new RangeError(
+			`${name} must be between ${min} and ${max}: (${value})`,
+		);
+	}
+}
+
 export function Synthesiser(opts: SynthOpts): Patch {
+	checkRange(
+		"pitchEnvelope's semitones",
+		opts.pitchEnvelope?.semitones,
+		-48,
+		48,
+	);
+	checkRange("hpf", opts.hpf, 0, 1);
+	checkRange("lpf", opts.lpf, 0, 1);
+	checkRange("postGain", opts.postGain, 0, 1);
+
+	if (
+		opts.filterEnvelope !== undefined &&
+		!Array.isArray(opts.filterEnvelope) &&
+		(opts.filterEnvelope.amount < 0 || opts.filterEnvelope.amount > 1)
+	) {
+		throw new RangeError(
+			`filterEnvelope's amount must be between 0 and 1: (${opts.filterEnvelope.amount})`,
+		);
+	}
+
 	return {
 		play(ctx, out, freq, time, duration) {
-			const mix = new GainNode(ctx);
+			const input = new GainNode(ctx);
 
-			// Add FX
+			/*
+			 * Add FX
+			 *
+			 *      input -> hpf -------> lpf ----------> amp (VCA) -> post gain -> out
+			 *        ↑                    ↑                 ↑
+			 *   pitch envelope      filter envelope    amp envelope
+			 */
+
 			const highPassFilter =
 				opts.hpf !== undefined ? hpf(ctx, opts.hpf) : undefined;
 
-			const lowPassFilter = lpf(ctx, opts.lpf ?? 1);
-
-			if (opts.filterEnv !== undefined) {
-				filter_env(
-					lowPassFilter,
-					opts.lpf ?? 1,
-					opts.filterEnv,
-					time,
-					duration,
-				);
+			let lowPassFilter: BiquadFilterNode | undefined;
+			if (opts.lpf !== undefined) {
+				lowPassFilter = lpf(ctx, opts.lpf);
+				if (opts.filterEnvelope !== undefined) {
+					filterEnvelope(
+						lowPassFilter,
+						opts.lpf,
+						opts.filterEnvelope,
+						time,
+						duration,
+					);
+				}
 			}
 
-			let chain: AudioNode = mix;
-			for (const i of [highPassFilter, lowPassFilter, out]) {
-				if (i) chain = chain.connect(i);
+			// Amp Envelope is the only non-optional effect in the chain, to stop clicking
+			const amp = new GainNode(ctx);
+			const end = ampEnvelope(
+				amp,
+				opts.ampEnvelope ?? [0.01, 0, 1, 0.05],
+				time,
+				duration,
+			);
+
+			let postGain: GainNode | undefined;
+			if (opts.postGain !== undefined) {
+				postGain = new GainNode(ctx, { gain: opts.postGain });
+			}
+
+			const signalPath: (AudioNode | undefined)[] = [
+				input,
+				highPassFilter,
+				lowPassFilter,
+				amp,
+				postGain,
+				out,
+			];
+			let signalChain: AudioNode = input;
+			for (const node of signalPath.slice(1)) {
+				if (node) signalChain = signalChain.connect(node);
 			}
 
 			// Start Playing Oscillators
-			const oscs = oscillators(ctx, opts.sound, freq, mix);
+			const oscs = oscillators(ctx, opts.sound, freq, input);
 			for (const osc of oscs) {
+				if (opts.pitchEnvelope !== undefined) {
+					pitchEnvelope(osc, freq, opts.pitchEnvelope, time, duration);
+				}
 				osc.start(time);
-				osc.stop(time + duration);
+				osc.stop(end);
 			}
+
+			oscs[0].onended = () => {
+				for (const node of signalPath.slice(0, -1)) {
+					if (node !== undefined) node.disconnect();
+				}
+				for (const osc of oscs) {
+					osc.disconnect();
+				}
+			};
 		},
 	};
 }
