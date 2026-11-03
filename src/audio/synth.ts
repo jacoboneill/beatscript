@@ -82,10 +82,37 @@ export type Patch = {
 	) => void;
 };
 
-export function Synthesiser(opts: SynthOpts): Patch {
-	if (opts.postGain !== undefined && (opts.postGain < 0 || opts.postGain > 1)) {
+function checkRange(
+	name: string,
+	value: number | undefined,
+	min: number,
+	max: number,
+) {
+	if (value !== undefined && (value < min || value > max)) {
 		throw new RangeError(
-			`postGain must be between 0 and 1: (${opts.postGain})`,
+			`${name} must be between ${min} and ${max}: (${value})`,
+		);
+	}
+}
+
+export function Synthesiser(opts: SynthOpts): Patch {
+	checkRange(
+		"pitchEnvelope's semitones",
+		opts.pitchEnvelope?.semitones,
+		-48,
+		48,
+	);
+	checkRange("hpf", opts.hpf, 0, 1);
+	checkRange("lpf", opts.lpf, 0, 1);
+	checkRange("postGain", opts.postGain, 0, 1);
+
+	if (
+		opts.filterEnvelope !== undefined &&
+		!Array.isArray(opts.filterEnvelope) &&
+		(opts.filterEnvelope.amount < 0 || opts.filterEnvelope.amount > 1)
+	) {
+		throw new RangeError(
+			`filterEnvelope's amount must be between 0 and 1: (${opts.filterEnvelope.amount})`,
 		);
 	}
 
