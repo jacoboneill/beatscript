@@ -176,7 +176,7 @@ export function Synthesiser(opts: SynthOpts): Patch {
 			const oscs = oscillators(ctx, opts.sound, freq, input);
 			for (const osc of oscs) {
 				if (opts.pitchEnvelope !== undefined) {
-					pitchEnvelope(osc, opts.pitchEnvelope, time, duration);
+					pitchEnvelope(osc, freq, opts.pitchEnvelope, time, duration);
 				}
 				osc.start(time);
 				osc.stop(end);
