@@ -28,21 +28,21 @@ The live code editing will use an adaption of the [mini notation](https://tidalc
 ### 3.1 Example Project
 
 ```js
-const synth_config = {
+const synthConfig = {
   sound: "supersaw",
-  filter_env: [0.01, 8.5, 0.1, 0.03],
-  amp_env: [0.01, 8.5, 0.1, 0.03],
+  filterEnv: [0.01, 8.5, 0.1, 0.03],
+  ampEnv: [0.01, 8.5, 0.1, 0.03],
 };
 
 const arp = Sequencer({
   notes: "[b2 g2 e2]!16 [a2 g2 e2]!16 [a2 g2 d2]!16 [a2 f#2 d2]!16",
   step: "1/16",
-}).add(Synthesiser({ ...synth_config, lpf: 0.4 }));
+}).add(Synthesiser({ ...synthConfig, lpf: 0.4 }));
 
 const bass = Sequencer({
   notes: "[b1,e1]!8 [a1,e1]!8 [a1,d1]!8 [a1,d1]!8",
   step: "1/8",
-}).add(Synthesiser({ ...synth_config, lpf: 0.2 }));
+}).add(Synthesiser({ ...synthConfig, lpf: 0.2 }));
 
 const kick = Sequencer({
   notes: "c1",
@@ -50,9 +50,9 @@ const kick = Sequencer({
 }).add(
   Synthesiser({
     sound: "sine",
-    pitch_env: { adsr: [0, 0.08, 0, 0], semitones: 36 },
-    amp_env: [0, 0.3, 0, 0.05],
-    post_gain: 1.2,
+    pitchEnv: { adsr: [0, 0.08, 0, 0], semitones: 36 },
+    ampEnv: [0, 0.3, 0, 0.05],
+    postGain: 1.2,
   }),
 );
 
@@ -110,14 +110,14 @@ Patches take an options object and create a voice that a controller can then pla
 | `"supersaw"` | 7 detuned sawtooth oscillators, mixed |
 | `"sine"`     | A single sine oscillator              |
 
-| Option       | Type                                         | Description                                                                                                                                                                           |
-| ------------ | -------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `lpf`        | number (0-1)                                 | Low-pass filter cutoff, mapped exponentially from 20 Hz to 20kHz (default at `1` or fully open)                                                                                       |
-| `hpf`        | number (0-1)                                 | High-pass filter cutoff, same mapping as `lpf` (default at `0` or fully open)                                                                                                         |
-| `filter_env` | number[4]\|{adsr: number[4], amount: number} | Envelope on the lpf cutoff. Either an ADSR array, or `{adsr, amount}` where `amount` (0-1) is how far above the base cutoff the envelope peaks. Default amount `1` (peaks fully open) |
-| `amp_env`    | number[4]                                    | Envelope on the voice volume, Default `[0.01, 0, 1, 0.05]`                                                                                                                            |
-| `pitch_env`  | {adsr: number[4], semitones: number (±48)}   | Envelope on oscillator pitch. Peaks `semitones` above the note and settles to it. Default: none.                                                                                      |
-| `post_gain`  | number (0-4)                                 | Linear gain after the amp envelope. Default 1.                                                                                                                                        |
+| Option      | Type                                         | Description                                                                                                                                                                           |
+| ----------- | -------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `lpf`       | number (0-1)                                 | Low-pass filter cutoff, mapped exponentially from 20 Hz to 20kHz (default at `1` or fully open)                                                                                       |
+| `hpf`       | number (0-1)                                 | High-pass filter cutoff, same mapping as `lpf` (default at `0` or fully open)                                                                                                         |
+| `filterEnv` | number[4]\|{adsr: number[4], amount: number} | Envelope on the lpf cutoff. Either an ADSR array, or `{adsr, amount}` where `amount` (0-1) is how far above the base cutoff the envelope peaks. Default amount `1` (peaks fully open) |
+| `ampEnv`    | number[4]                                    | Envelope on the voice volume, Default `[0.01, 0, 1, 0.05]`                                                                                                                            |
+| `pitchEnv`  | {adsr: number[4], semitones: number (±48)}   | Envelope on oscillator pitch. Peaks `semitones` above the note and settles to it. Default: none.                                                                                      |
+| `postGain`  | number (0-4)                                 | Linear gain after the amp envelope. Default 1.                                                                                                                                        |
 
 ## 4. Tech Choices
 
