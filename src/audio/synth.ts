@@ -66,6 +66,7 @@ export type SynthOpts = {
 	hpf?: number;
 	filterEnvelope?: FilterEnvelope;
 	ampEnvelope?: ADSR;
+	postGain?: number;
 };
 
 export type Patch = {
@@ -79,6 +80,12 @@ export type Patch = {
 };
 
 export function Synthesiser(opts: SynthOpts): Patch {
+	if (opts.postGain !== undefined && (opts.postGain < 0 || opts.postGain > 1)) {
+		throw new RangeError(
+			`postGain must be between 0 and 1: (${opts.postGain})`,
+		);
+	}
+
 	return {
 		play(ctx, out, freq, time, duration) {
 			const input = new GainNode(ctx);
@@ -117,11 +124,17 @@ export function Synthesiser(opts: SynthOpts): Patch {
 				duration,
 			);
 
+			let postGain: GainNode | undefined;
+			if (opts.postGain !== undefined) {
+				postGain = new GainNode(ctx, { gain: opts.postGain });
+			}
+
 			const signalPath: (AudioNode | undefined)[] = [
 				input,
 				highPassFilter,
 				lowPassFilter,
 				amp,
+				postGain,
 				out,
 			];
 			let signalChain: AudioNode = input;
