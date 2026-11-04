@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "preact/hooks";
 import { Editor } from "./editor";
+import { PlayButton } from "./play-button";
 import { isPlaying, run, stop } from "./runtime";
 
 // starting code, until it's saved between visits (#16)
@@ -95,9 +96,7 @@ export function App() {
 
 	return (
 		<>
-			<button type="button" onClick={playing ? halt : apply}>
-				{playing ? "Stop" : "Play"}
-			</button>
+			<PlayButton playing={playing} onClick={playing ? halt : apply} />
 			{error && <pre class="error">{error}</pre>}
 			<Editor
 				initial={EXAMPLE}

@@ -38,31 +38,90 @@ body {
 	font-family: system-ui, sans-serif;
 }
 
+/* the page is exactly one screen, only the editor scrolls */
+body {
+	width: 100svw;
+	height: 100svh;
+	overflow: hidden;
+}
+
 #app {
+	box-sizing: border-box;
+	display: flex;
+	flex-direction: column;
+	height: 100%;
 	padding: 1.5rem 2rem;
 }
 
 .error {
+	flex: none;
 	color: var(--red);
 	font-family: var(--mono);
 	white-space: pre-wrap;
 }
 
+/* Play/stop */
+
+.play-button {
+	flex: none;
+	display: grid;
+	place-items: center;
+	width: 3rem;
+	height: 3rem;
+	margin-bottom: 1.5rem;
+	padding: 0;
+	border: none;
+	border-radius: 50%;
+	background: var(--green);
+	color: var(--base);
+	cursor: pointer;
+	transition: filter 0.1s;
+}
+
+.play-button:hover {
+	filter: brightness(1.1);
+}
+
+.play-button:active {
+	filter: brightness(0.9);
+}
+
+.play-button:focus-visible {
+	outline: 2px solid var(--lavender);
+	outline-offset: 3px;
+}
+
+.play-button svg {
+	width: 1.5rem;
+	height: 1.5rem;
+	fill: currentColor;
+}
+
 /* Editor */
 
+/* the pane scrolls, not the editor, so the numbers and code move together */
 .editor-pane {
+	flex: 1;
+	min-height: 0;
 	display: flex;
+	align-items: flex-start;
 	width: 50%;
+	overflow: auto;
 	background: var(--base);
 	font-family: var(--mono);
 	font-size: 14px;
 	line-height: 1.5;
+	scrollbar-color: var(--surface1) transparent;
 }
 
+/* sticky, so the numbers stay put when scrolling sideways */
 .line-numbers {
+	position: sticky;
+	left: 0;
 	margin: 0;
 	padding: 1rem 1.5rem 1rem 0;
 	min-width: 2ch;
+	background: var(--base);
 	color: var(--overlay0);
 	font: inherit;
 	text-align: right;
@@ -70,13 +129,13 @@ body {
 }
 
 .editor {
+	box-sizing: border-box;
 	flex: 1;
-	min-height: 80vh;
+	min-height: 100%;
 	padding: 1rem 0;
 	color: var(--text);
 	caret-color: var(--rosewater);
 	tab-size: 2;
-	overflow-x: auto;
 	outline: none;
 }
 
