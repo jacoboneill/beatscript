@@ -6,54 +6,9 @@ import { check, isPlaying, run, stop } from "./runtime";
 import { Visualiser } from "./visualiser";
 import { DEFAULT_VOLUME, Volume } from "./volume";
 
-// starting code, until it's saved between visits (#16)
-const EXAMPLE = `const kick = Sequencer({
-  notes: "c1",
-  step: 1 / 4,
-}).add(
-  Synthesiser({
-    sound: "sine",
-    pitchEnvelope: { adsr: [0, 0.08, 0.05, 0], semitones: 36 },
-    ampEnvelope: [0, 0.3, 0, 0.05],
-  }),
-);
-
-// duck by 0.4 on every kick
-const sidechained = { value: 0.8, sidechain: { source: kick, amount: 0.4 } };
-
-const synthConfig = {
-  sound: "supersaw",
-  ampEnvelope: [0.01, 8.5, 0.1, 0.03],
-  postGain: sidechained,
-};
-
-const arp = Sequencer({
-  notes: "[b3 g3 e3]!16 [a3 g3 e3]!16 [a3 g3 d3]!16 [a3 f#3 d3]!16",
-  step: 1 / 16,
-}).add(Synthesiser({ ...synthConfig, lpf: 0.5 }));
-
-// "~ [b2,e2] ~ [b2,e2] ~ [b2,e2] ~ [b2,e2]", one bar of off-beats
-const offbeat = (chord) => ("~ " + chord + " ").repeat(4);
-
-const bass = Sequencer({
-  notes:
-    offbeat("[b2,e2]") + offbeat("[a2,e2]") + offbeat("[a2,d2]") + offbeat("[a2,d2]"),
-  step: 1 / 8,
-}).add(
-  Synthesiser({
-    ...synthConfig,
-    hpf: 0.2,
-    lpf: 0.3,
-    filterEnvelope: { adsr: [0.01, 0.2, 0.1, 0.03], amount: 0.4 },
-    ampEnvelope: [0.01, 0.2, 0.6, 0.03],
-  }),
-);
-
-play(120, arp, bass, kick);
-`;
-
 export function App() {
-	const code = useRef(EXAMPLE);
+	const START_STATE = "";
+	const code = useRef(START_STATE);
 	const [error, setError] = useState<string | undefined>(undefined);
 	const [playing, setPlaying] = useState(false);
 	const [engine, setEngine] = useState<Engine | undefined>(undefined);
@@ -67,7 +22,7 @@ export function App() {
 	}, [engine, volume]);
 
 	// "saved" means the code that's playing, or the example before anything has
-	const saved = useRef(EXAMPLE);
+	const saved = useRef(START_STATE);
 	const [dirty, setDirty] = useState(false);
 
 	const apply = async () => {
@@ -144,7 +99,7 @@ export function App() {
 				<section class="code">
 					{error && <pre class="error">{error}</pre>}
 					<Editor
-						initial={EXAMPLE}
+						initial={START_STATE}
 						onChange={(next) => {
 							code.current = next;
 							setDirty(next !== saved.current);
