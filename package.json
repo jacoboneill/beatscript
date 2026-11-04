@@ -10,12 +10,15 @@
 		"clean": "rm -rf ./dist"
 	},
 	"dependencies": {
-		"preact": "^11.1.1"
+		"codejar": "^4.3.0",
+		"preact": "^11.1.1",
+		"prismjs": "^1.30.0"
 	},
 	"devDependencies": {
 		"@biomejs/biome": "2.6.4",
 		"@preact/preset-vite": "^2.10.5",
 		"@types/node": "^24.13.2",
+		"@types/prismjs": "^1.26.6",
 		"typescript": "~6.0.2",
 		"vite": "^8.1.1"
 	},

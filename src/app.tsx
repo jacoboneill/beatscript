@@ -1,7 +1,8 @@
-import { useState } from "preact/hooks";
+import { useEffect, useRef, useState } from "preact/hooks";
+import { Editor } from "./editor";
 import { isPlaying, run, stop } from "./runtime";
 
-// Temporary #9 test page, a textarea until the editor (#10)
+// starting code, until it's saved between visits (#16)
 const EXAMPLE = `const kick = Sequencer({
   notes: "c1",
   step: 1 / 4,
@@ -48,13 +49,13 @@ play(120, arp, bass, kick);
 `;
 
 export function App() {
-	const [code, setCode] = useState(EXAMPLE);
+	const code = useRef(EXAMPLE);
 	const [error, setError] = useState<string | undefined>(undefined);
 	const [playing, setPlaying] = useState(false);
 
 	const apply = async () => {
 		try {
-			await run(code);
+			await run(code.current);
 			setError(undefined);
 		} catch (e) {
 			setError(String(e));
@@ -67,23 +68,42 @@ export function App() {
 		setPlaying(false);
 	};
 
+	// Cmd/Ctrl+Enter toggles play/stop, Cmd/Ctrl+S applies while playing.
+	// Capture phase, so the editor never sees them (no newline, no Save Page)
+	useEffect(() => {
+		const onKey = (e: KeyboardEvent) => {
+			if (!(e.metaKey || e.ctrlKey)) return;
+
+			if (e.key === "Enter") {
+				e.preventDefault();
+				e.stopPropagation();
+				if (isPlaying()) {
+					halt();
+				} else {
+					apply();
+				}
+			} else if (e.key === "s") {
+				e.preventDefault();
+				e.stopPropagation();
+				if (isPlaying()) apply();
+			}
+		};
+
+		window.addEventListener("keydown", onKey, true);
+		return () => window.removeEventListener("keydown", onKey, true);
+	});
+
 	return (
 		<>
-			<h1>beatscript</h1>
-			<button type="button" onClick={apply}>
-				{playing ? "Apply" : "Run"}
+			<button type="button" onClick={playing ? halt : apply}>
+				{playing ? "Stop" : "Play"}
 			</button>
-			<button type="button" onClick={halt} disabled={!playing}>
-				Stop
-			</button>
-			{error && <pre style={{ color: "red" }}>{error}</pre>}
-			<textarea
-				value={code}
-				onInput={(e) => setCode(e.currentTarget.value)}
-				rows={40}
-				cols={90}
-				spellcheck={false}
-				style={{ display: "block", fontFamily: "monospace" }}
+			{error && <pre class="error">{error}</pre>}
+			<Editor
+				initial={EXAMPLE}
+				onChange={(next) => {
+					code.current = next;
+				}}
 			/>
 		</>
 	);

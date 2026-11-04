@@ -1,0 +1,140 @@
+/* Catppuccin Mocha, swap these to theme the app */
+:root {
+	--rosewater: #f5e0dc;
+	--flamingo: #f2cdcd;
+	--pink: #f5c2e7;
+	--mauve: #cba6f7;
+	--red: #f38ba8;
+	--maroon: #eba0ac;
+	--peach: #fab387;
+	--yellow: #f9e2af;
+	--green: #a6e3a1;
+	--teal: #94e2d5;
+	--sky: #89dceb;
+	--sapphire: #74c7ec;
+	--blue: #89b4fa;
+	--lavender: #b4befe;
+	--text: #cdd6f4;
+	--subtext1: #bac2de;
+	--subtext0: #a6adc8;
+	--overlay2: #9399b2;
+	--overlay1: #7f849c;
+	--overlay0: #6c7086;
+	--surface2: #585b70;
+	--surface1: #45475a;
+	--surface0: #313244;
+	--base: #1e1e2e;
+	--mantle: #181825;
+	--crust: #11111b;
+
+	--mono: ui-monospace, "JetBrains Mono", Menlo, Consolas, monospace;
+}
+
+html,
+body {
+	margin: 0;
+	background: var(--base);
+	color: var(--text);
+	font-family: system-ui, sans-serif;
+}
+
+#app {
+	padding: 1.5rem 2rem;
+}
+
+.error {
+	color: var(--red);
+	font-family: var(--mono);
+	white-space: pre-wrap;
+}
+
+/* Editor */
+
+.editor-pane {
+	display: flex;
+	width: 50%;
+	background: var(--base);
+	font-family: var(--mono);
+	font-size: 14px;
+	line-height: 1.5;
+}
+
+.line-numbers {
+	margin: 0;
+	padding: 1rem 1.5rem 1rem 0;
+	min-width: 2ch;
+	color: var(--overlay0);
+	font: inherit;
+	text-align: right;
+	user-select: none;
+}
+
+.editor {
+	flex: 1;
+	min-height: 80vh;
+	padding: 1rem 0;
+	color: var(--text);
+	caret-color: var(--rosewater);
+	tab-size: 2;
+	overflow-x: auto;
+	outline: none;
+}
+
+/* Syntax colours, mapped as in https://github.com/catppuccin/prismjs */
+
+.token.keyword,
+.token.important {
+	color: var(--mauve);
+}
+
+.token.builtin {
+	color: var(--red);
+}
+
+.token.class-name,
+.token.symbol {
+	color: var(--yellow);
+}
+
+.token.function,
+.token.property {
+	color: var(--blue);
+}
+
+.token.boolean,
+.token.number,
+.token.constant {
+	color: var(--peach);
+}
+
+.token.string,
+.token.char,
+.token.url {
+	color: var(--green);
+}
+
+.token.regex {
+	color: var(--pink);
+}
+
+.token.operator {
+	color: var(--sky);
+}
+
+.token.variable {
+	color: var(--text);
+}
+
+.token.punctuation,
+.token.comment {
+	color: var(--overlay2);
+}
+
+.token.important,
+.token.bold {
+	font-weight: bold;
+}
+
+.token.italic {
+	font-style: italic;
+}
