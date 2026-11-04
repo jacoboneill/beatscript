@@ -8,7 +8,7 @@ const SEMITONES = { c: 0, d: 2, e: 4, f: 5, g: 7, a: 9, b: 11 } as const;
 
 type SymbolType = (typeof SYMBOLS)[keyof typeof SYMBOLS];
 
-type Token =
+export type Token =
 	| { type: SymbolType; idx: number }
 	| { type: "FREQ"; idx: number; value: number }
 	| { type: "REPEAT"; idx: number; value: number };
