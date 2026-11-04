@@ -14,8 +14,6 @@ const kick = Sequencer({ notes: "c1", step: 1 / 4 }).add(
 play(120, kick);
 ```
 
-> **Status:** early development. Nothing plays yet.
-
 ## Getting started
 
 Requires Node.js.
@@ -27,13 +25,12 @@ npm run dev
 
 ## Scripts
 
-| Command             | What it does                         |
-| ------------------- | ------------------------------------ |
-| `npm run dev`       | Start the Vite dev server            |
-| `npm run build`     | Type-check and build to `dist/`      |
-| `npm run preview`   | Serve the production build locally   |
-| `npm run check`     | Check formatting and lint with Biome |
-| `npm run check:fix` | Same, applying safe fixes            |
+| Command         | What it does                                 |
+| --------------- | -------------------------------------------- |
+| `npm run dev`   | Start the Vite dev server                    |
+| `npm run build` | Type-check and build to `dist/`              |
+| `npm run check` | Check typing, formatting and lint with Biome |
+| `npm run clean` | Clean repository of build artifacts          |
 
 ## Docs
 
