@@ -62,6 +62,11 @@ function oscillators(
 	return sounds[sound](ctx, freq, out);
 }
 
+// anything that makes a control voltage, e.g. a Sequencer's 0 -> 1 -> 0 per note
+export type CVSource = { cv: (ctx: AudioContext) => AudioNode };
+export type Sidechain = { source: CVSource; amount: number };
+export type PostGain = number | { value: number; sidechain?: Sidechain };
+
 export type SynthOpts = {
 	sound: Sound;
 	pitchEnvelope?: PitchEnvelope;
@@ -69,7 +74,7 @@ export type SynthOpts = {
 	lpf?: number;
 	filterEnvelope?: FilterEnvelope;
 	ampEnvelope?: ADSR;
-	postGain?: number;
+	postGain?: PostGain;
 };
 
 export type Patch = {
@@ -104,7 +109,21 @@ export function Synthesiser(opts: SynthOpts): Patch {
 	);
 	checkRange("hpf", opts.hpf, 0, 1);
 	checkRange("lpf", opts.lpf, 0, 1);
-	checkRange("postGain", opts.postGain, 0, 1);
+
+	const post =
+		typeof opts.postGain === "number"
+			? { value: opts.postGain, sidechain: undefined }
+			: opts.postGain;
+	checkRange("postGain", post?.value, 0, 1);
+	if (post?.sidechain !== undefined) {
+		// more than value would take the gain below 0 and flip the sound
+		checkRange(
+			"postGain's sidechain amount",
+			post.sidechain.amount,
+			0,
+			post.value,
+		);
+	}
 
 	if (
 		opts.filterEnvelope !== undefined &&
@@ -124,8 +143,8 @@ export function Synthesiser(opts: SynthOpts): Patch {
 			 * Add FX
 			 *
 			 *      input -> hpf -------> lpf ----------> amp (VCA) -> post gain -> out
-			 *        ↑                    ↑                 ↑
-			 *   pitch envelope      filter envelope    amp envelope
+			 *        ↑                    ↑                 ↑              ↑
+			 *   pitch envelope      filter envelope    amp envelope    sidechain
 			 */
 
 			const highPassFilter =
@@ -155,8 +174,17 @@ export function Synthesiser(opts: SynthOpts): Patch {
 			);
 
 			let postGain: GainNode | undefined;
-			if (opts.postGain !== undefined) {
-				postGain = new GainNode(ctx, { gain: opts.postGain });
+			let cv: AudioNode | undefined;
+			let duck: GainNode | undefined;
+			if (post !== undefined) {
+				postGain = new GainNode(ctx, { gain: post.value });
+
+				// cv -> -amount -> gain, so the gain dips by amount when the cv is 1
+				if (post.sidechain !== undefined) {
+					cv = post.sidechain.source.cv(ctx);
+					duck = new GainNode(ctx, { gain: -post.sidechain.amount });
+					cv.connect(duck).connect(postGain.gain);
+				}
 			}
 
 			const signalPath: (AudioNode | undefined)[] = [
@@ -188,6 +216,12 @@ export function Synthesiser(opts: SynthOpts): Patch {
 				}
 				for (const osc of oscs) {
 					osc.disconnect();
+				}
+
+				// the cv is shared with other voices, so only unplug this voice
+				if (cv !== undefined && duck !== undefined) {
+					cv.disconnect(duck);
+					duck.disconnect();
 				}
 			};
 		},
