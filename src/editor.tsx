@@ -13,9 +13,11 @@ function highlight(editor: HTMLElement) {
 type EditorProps = {
 	initial: string;
 	onChange: (code: string) => void;
+	// shows a dot above the line numbers, like an unsaved tab in VS Code
+	dirty: boolean;
 };
 
-export function Editor({ initial, onChange }: EditorProps) {
+export function Editor({ initial, onChange, dirty }: EditorProps) {
 	const container = useRef<HTMLDivElement>(null);
 
 	// keep the latest callback without rebuilding the editor every render
@@ -67,5 +69,11 @@ export function Editor({ initial, onChange }: EditorProps) {
 		};
 	}, [initial]);
 
-	return <div ref={container} class="editor-pane" />;
+	return (
+		<div
+			ref={container}
+			class={dirty ? "editor-pane dirty" : "editor-pane"}
+			title={dirty ? "Unapplied changes (Cmd/Ctrl+S)" : undefined}
+		/>
+	);
 }

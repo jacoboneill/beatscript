@@ -36,6 +36,11 @@ function evaluate(code: string): Program {
 	return program;
 }
 
+// throw any error in the user's code, without playing or stopping anything
+export function check(code: string): void {
+	evaluate(code);
+}
+
 export async function run(code: string): Promise<void> {
 	const program = evaluate(code);
 	if (program === undefined) return;

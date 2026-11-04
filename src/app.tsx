@@ -2,8 +2,9 @@ import { useEffect, useRef, useState } from "preact/hooks";
 import { type Engine, startEngine } from "./audio/engine";
 import { Editor } from "./editor";
 import { PlayButton } from "./play-button";
-import { isPlaying, run, stop } from "./runtime";
+import { check, isPlaying, run, stop } from "./runtime";
 import { Visualiser } from "./visualiser";
+import { DEFAULT_VOLUME, Volume } from "./volume";
 
 // starting code, until it's saved between visits (#16)
 const EXAMPLE = `const kick = Sequencer({
@@ -56,10 +57,25 @@ export function App() {
 	const [error, setError] = useState<string | undefined>(undefined);
 	const [playing, setPlaying] = useState(false);
 	const [engine, setEngine] = useState<Engine | undefined>(undefined);
+	const [volume, setVolume] = useState(DEFAULT_VOLUME);
+
+	// master volume, a short glide so dragging the slider doesn't crackle.
+	// Before the first play there's no engine, so this runs again once there is
+	useEffect(() => {
+		if (engine === undefined) return;
+		engine.master.gain.setTargetAtTime(volume, engine.ctx.currentTime, 0.02);
+	}, [engine, volume]);
+
+	// "saved" means the code that's playing, or the example before anything has
+	const saved = useRef(EXAMPLE);
+	const [dirty, setDirty] = useState(false);
 
 	const apply = async () => {
+		const submitted = code.current;
 		try {
-			await run(code.current);
+			await run(submitted);
+			saved.current = submitted;
+			setDirty(code.current !== submitted);
 			setError(undefined);
 		} catch (e) {
 			setError(String(e));
@@ -70,12 +86,26 @@ export function App() {
 		if (isPlaying()) setEngine(await startEngine());
 	};
 
+	// Cmd/Ctrl+S while stopped, check the code and mark it saved if it's fine
+	const save = () => {
+		const submitted = code.current;
+		try {
+			check(submitted);
+			saved.current = submitted;
+			setDirty(false);
+			setError(undefined);
+		} catch (e) {
+			setError(String(e));
+		}
+	};
+
 	const halt = () => {
 		stop();
 		setPlaying(false);
 	};
 
-	// Cmd/Ctrl+Enter toggles play/stop, Cmd/Ctrl+S applies while playing.
+	// Cmd/Ctrl+Enter toggles play/stop, Cmd/Ctrl+S applies while playing and
+	// checks while stopped.
 	// Capture phase, so the editor never sees them (no newline, no Save Page)
 	useEffect(() => {
 		const onKey = (e: KeyboardEvent) => {
@@ -92,7 +122,11 @@ export function App() {
 			} else if (e.key === "s") {
 				e.preventDefault();
 				e.stopPropagation();
-				if (isPlaying()) apply();
+				if (isPlaying()) {
+					apply();
+				} else {
+					save();
+				}
 			}
 		};
 
@@ -102,7 +136,10 @@ export function App() {
 
 	return (
 		<>
-			<PlayButton playing={playing} onClick={playing ? halt : apply} />
+			<header class="toolbar">
+				<PlayButton playing={playing} onClick={playing ? halt : apply} />
+				<Volume value={volume} onChange={setVolume} />
+			</header>
 			<main class="workspace">
 				<section class="code">
 					{error && <pre class="error">{error}</pre>}
@@ -110,7 +147,9 @@ export function App() {
 						initial={EXAMPLE}
 						onChange={(next) => {
 							code.current = next;
+							setDirty(next !== saved.current);
 						}}
+						dirty={dirty}
 					/>
 				</section>
 				<Visualiser engine={engine} />
