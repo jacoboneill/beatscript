@@ -11,6 +11,7 @@
 	},
 	"dependencies": {
 		"@fortawesome/free-solid-svg-icons": "^7.3.1",
+		"audiomotion-analyzer": "^4.5.4",
 		"codejar": "^4.3.0",
 		"preact": "^11.1.1",
 		"prismjs": "^1.30.0"

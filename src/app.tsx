@@ -1,7 +1,9 @@
 import { useEffect, useRef, useState } from "preact/hooks";
+import { type Engine, startEngine } from "./audio/engine";
 import { Editor } from "./editor";
 import { PlayButton } from "./play-button";
 import { isPlaying, run, stop } from "./runtime";
+import { Visualiser } from "./visualiser";
 
 // starting code, until it's saved between visits (#16)
 const EXAMPLE = `const kick = Sequencer({
@@ -53,6 +55,7 @@ export function App() {
 	const code = useRef(EXAMPLE);
 	const [error, setError] = useState<string | undefined>(undefined);
 	const [playing, setPlaying] = useState(false);
+	const [engine, setEngine] = useState<Engine | undefined>(undefined);
 
 	const apply = async () => {
 		try {
@@ -62,6 +65,9 @@ export function App() {
 			setError(String(e));
 		}
 		setPlaying(isPlaying());
+
+		// the engine only exists once something has played
+		if (isPlaying()) setEngine(await startEngine());
 	};
 
 	const halt = () => {
@@ -97,13 +103,18 @@ export function App() {
 	return (
 		<>
 			<PlayButton playing={playing} onClick={playing ? halt : apply} />
-			{error && <pre class="error">{error}</pre>}
-			<Editor
-				initial={EXAMPLE}
-				onChange={(next) => {
-					code.current = next;
-				}}
-			/>
+			<main class="workspace">
+				<section class="code">
+					{error && <pre class="error">{error}</pre>}
+					<Editor
+						initial={EXAMPLE}
+						onChange={(next) => {
+							code.current = next;
+						}}
+					/>
+				</section>
+				<Visualiser engine={engine} />
+			</main>
 		</>
 	);
 }
