@@ -37,12 +37,12 @@ const synthConfig = {
 
 const arp = Sequencer({
   notes: "[b2 g2 e2]!16 [a2 g2 e2]!16 [a2 g2 d2]!16 [a2 f#2 d2]!16",
-  step: "1/16",
+  step: 1 / 16,
 }).add(Synthesiser({ ...synthConfig, lpf: 0.4 }));
 
 const bass = Sequencer({
   notes: "[b1,e1]!8 [a1,e1]!8 [a1,d1]!8 [a1,d1]!8",
-  step: "1/8",
+  step: 1 / 8,
 }).add(
   Synthesiser({
     ...synthConfig,
@@ -54,7 +54,7 @@ const bass = Sequencer({
 
 const kick = Sequencer({
   notes: "c1",
-  step: "1/4",
+  step: 1 / 4,
 }).add(
   Synthesiser({
     sound: "sine",
@@ -102,7 +102,7 @@ Plays elements in order, one per step. Chords (`[b1,e1]`) play more than one not
 | Option  | Type   | Default  | Description                                                              |
 | ------- | ------ | -------- | ------------------------------------------------------------------------ |
 | `notes` | string | required | Notes in mini notation ([§3.3](#33-mini-notation))                       |
-| `step`  | string | `"1/16"` | Length of one step, as a fraction of a bar. `"1/4"` plays quarter notes. |
+| `step`  | number | `1 / 16` | Length of one step, as a fraction of a bar. `1 / 4` plays quarter notes. |
 
 ### 3.5 Patches
 
