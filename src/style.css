@@ -1,0 +1,276 @@
+/* Catppuccin Mocha, swap these to theme the app */
+:root {
+	--rosewater: #f5e0dc;
+	--flamingo: #f2cdcd;
+	--pink: #f5c2e7;
+	--mauve: #cba6f7;
+	--red: #f38ba8;
+	--maroon: #eba0ac;
+	--peach: #fab387;
+	--yellow: #f9e2af;
+	--green: #a6e3a1;
+	--teal: #94e2d5;
+	--sky: #89dceb;
+	--sapphire: #74c7ec;
+	--blue: #89b4fa;
+	--lavender: #b4befe;
+	--text: #cdd6f4;
+	--subtext1: #bac2de;
+	--subtext0: #a6adc8;
+	--overlay2: #9399b2;
+	--overlay1: #7f849c;
+	--overlay0: #6c7086;
+	--surface2: #585b70;
+	--surface1: #45475a;
+	--surface0: #313244;
+	--base: #1e1e2e;
+	--mantle: #181825;
+	--crust: #11111b;
+
+	--mono: ui-monospace, "JetBrains Mono", Menlo, Consolas, monospace;
+}
+
+html,
+body {
+	margin: 0;
+	background: var(--base);
+	color: var(--text);
+	font-family: system-ui, sans-serif;
+}
+
+/* the page is exactly one screen, only the editor scrolls */
+body {
+	width: 100svw;
+	height: 100svh;
+	overflow: hidden;
+}
+
+#app {
+	box-sizing: border-box;
+	display: flex;
+	flex-direction: column;
+	height: 100%;
+	padding: 1.5rem 2rem;
+}
+
+/* code on the left, visualiser on the right */
+.workspace {
+	flex: 1;
+	min-height: 0;
+	display: grid;
+	grid-template-columns: 1fr 1fr;
+	gap: 2rem;
+}
+
+.code {
+	display: flex;
+	flex-direction: column;
+	min-width: 0;
+	min-height: 0;
+}
+
+/* 16:9, centred in its column */
+.visualiser {
+	box-sizing: border-box;
+	align-self: center;
+	width: 100%;
+	height: auto;
+	aspect-ratio: 16 / 9;
+	min-width: 0;
+	padding: 1.25rem;
+	border-radius: 0.75rem;
+	background: var(--mantle);
+}
+
+.visualiser-inner {
+	width: 100%;
+	height: 100%;
+	overflow: hidden;
+}
+
+.visualiser canvas {
+	display: block;
+}
+
+.error {
+	flex: none;
+	color: var(--red);
+	font-family: var(--mono);
+	white-space: pre-wrap;
+}
+
+/* Toolbar */
+
+.toolbar {
+	flex: none;
+	display: flex;
+	align-items: center;
+	gap: 1.5rem;
+	margin-bottom: 1.5rem;
+}
+
+.volume {
+	display: flex;
+	align-items: center;
+	gap: 0.75rem;
+	color: var(--overlay2);
+}
+
+.volume svg {
+	width: 1.25rem;
+	height: 1.25rem;
+	fill: currentColor;
+}
+
+.volume input {
+	width: 8rem;
+	accent-color: var(--green);
+	cursor: pointer;
+}
+
+/* Play/stop */
+
+.play-button {
+	display: grid;
+	place-items: center;
+	width: 3rem;
+	height: 3rem;
+	padding: 0;
+	border: none;
+	border-radius: 50%;
+	background: var(--green);
+	color: var(--base);
+	cursor: pointer;
+	transition: filter 0.1s;
+}
+
+.play-button:hover {
+	filter: brightness(1.1);
+}
+
+.play-button:active {
+	filter: brightness(0.9);
+}
+
+.play-button:focus-visible {
+	outline: 2px solid var(--lavender);
+	outline-offset: 3px;
+}
+
+.play-button svg {
+	width: 1.25rem;
+	height: 1.25rem;
+	fill: currentColor;
+}
+
+/* Editor */
+
+/* the pane scrolls, not the editor, so the numbers and code move together */
+.editor-pane {
+	flex: 1;
+	min-height: 0;
+	display: flex;
+	align-items: flex-start;
+	overflow: auto;
+	background: var(--base);
+	font-family: var(--mono);
+	font-size: 14px;
+	line-height: 1.5;
+	scrollbar-color: var(--surface1) transparent;
+}
+
+/* sticky, so the numbers stay put when scrolling sideways */
+.line-numbers {
+	position: sticky;
+	left: 0;
+	margin: 0;
+	padding: 1rem 1.5rem 1rem 0;
+	min-width: 2ch;
+	background: var(--base);
+	color: var(--overlay0);
+	font: inherit;
+	text-align: right;
+	user-select: none;
+}
+
+/* unsaved changes dot, in the gutter's top padding above line 1 */
+.editor-pane.dirty .line-numbers::before {
+	content: "";
+	position: absolute;
+	top: 0.25rem;
+	right: 1.5rem;
+	width: 0.5rem;
+	height: 0.5rem;
+	border-radius: 50%;
+	background: var(--text);
+}
+
+.editor {
+	box-sizing: border-box;
+	flex: 1;
+	min-height: 100%;
+	padding: 1rem 0;
+	color: var(--text);
+	caret-color: var(--rosewater);
+	tab-size: 2;
+	outline: none;
+}
+
+/* Syntax colours, mapped as in https://github.com/catppuccin/prismjs */
+
+.token.keyword,
+.token.important {
+	color: var(--mauve);
+}
+
+.token.builtin {
+	color: var(--red);
+}
+
+.token.class-name,
+.token.symbol {
+	color: var(--yellow);
+}
+
+.token.function,
+.token.property {
+	color: var(--blue);
+}
+
+.token.boolean,
+.token.number,
+.token.constant {
+	color: var(--peach);
+}
+
+.token.string,
+.token.char,
+.token.url {
+	color: var(--green);
+}
+
+.token.regex {
+	color: var(--pink);
+}
+
+.token.operator {
+	color: var(--sky);
+}
+
+.token.variable {
+	color: var(--text);
+}
+
+.token.punctuation,
+.token.comment {
+	color: var(--overlay2);
+}
+
+.token.important,
+.token.bold {
+	font-weight: bold;
+}
+
+.token.italic {
+	font-style: italic;
+}
